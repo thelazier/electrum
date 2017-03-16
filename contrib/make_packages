@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/env python2
 
 import sys, re, shutil, os, hashlib
 import imp
@@ -25,6 +25,19 @@ if __name__ == '__main__':
         'jsonrpclib',
 	'socks',
     ]
+    if sys.platform == 'darwin':
+        deps = [
+            'pyaes',
+            'ecdsa',
+            'pbkdf2',
+            'requests', # note: requests-2.5.1 is needed to build with pyinstaller
+            'qrcode',
+            'google.protobuf',
+            'dns',
+            'six',
+            'jsonrpclib',
+            'socks',
+        ]
     for module in deps:
         f, pathname, descr = imp.find_module(module)
         target = 'packages/' + module + descr[0]

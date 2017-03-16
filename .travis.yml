@@ -1,8 +1,33 @@
-sudo: false
 language: python
-python:
-    - "2.7"
+
+cache:
+    directories:
+    - $HOME/virtualenv
+
+matrix:
+    include:
+        - os: osx
+          language: generic
+        - os: linux
+          sudo: false
+          python: "2.7"
+          addons:
+              apt:
+                  packages:
+                      - nsis
+                      - wine
+                      - libusb-1.0-0-dev
+                      - libudev-dev
+
 install:
-    - pip install tox
+    - source ./.travis_install.sh
+
 script:
-    - tox
+    - pyrcc4 icons.qrc -o gui/qt/icons_rc.py
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then tox; ./contrib/make_packages; fi
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then coverage run --source=lib -m py.test -v; coverage report; fi
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ARCHFLAGS="-arch i386 -arch X86_64" python setup-release.py py2app --includes sip ; fi
+    - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then hdiutil create -fs HFS+ -volname "Electrum" -srcfolder dist/Electrum.app dist/electrum-$ELECTRUM_VERSION-macosx.dmg; fi
+
+after_success:
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ls -la dist; fi
